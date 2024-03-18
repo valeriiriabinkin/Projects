@@ -126,3 +126,38 @@ def split_large_xml(input_file, events_per_file):
 input_file = 'large_file.xml'
 events_per_file = 1000  # Укажите желаемое количество событий в каждом файле
 split_large_xml(input_file, events_per_file)
+
+
+def load_xml_files_to_sql_server(folder_path, connection_string, events_per_file):
+    # Получаем список XML файлов в указанной папке
+    xml_files = [f for f in os.listdir(folder_path) if f.endswith('.xml')]
+
+    # Подключаемся к базе данных
+    conn = pyodbc.connect(connection_string)
+    cursor = conn.cursor()
+
+    # Для каждого XML файла в папке
+    for xml_file in xml_files:
+        # Разбиваем файл на более мелкие с использованием функции split_large_xml
+        split_large_xml(os.path.join(folder_path, xml_file), events_per_file)
+        
+        # Загружаем данные из каждого разделенного XML файла в базу данных
+        for i in range(len(xml_files)):
+            filename = f'output_{i}.xml'
+            tree = ET.parse(filename)
+            root = tree.getroot()
+
+            for event in root.findall('.//Event'):
+                date = event.find('Date').text
+                event_presentation = event.find('EventPresentation').text
+                user_name = event.find('UserName').text if event.find('UserName') is not None else None
+
+                # SQL запрос для вставки данных
+                sql_insert = "INSERT INTO YourTableName (Date, EventPresentation, UserName) VALUES (?, ?, ?)"
+                cursor.execute(sql_insert, (date, event_presentation, user_name))
+
+            # Фиксация изменений
+            conn.commit()
+
+    # Закрываем соединение
+    conn.close()
