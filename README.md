@@ -56,3 +56,22 @@ def split_xml(input_file, events_per_file):
 
 # Пример использования функции
 split_xml('input.xml', events_per_file=2)
+
+
+import xml.etree.ElementTree as ET
+
+def process_large_xml(file_path):
+    with open(file_path, 'rb') as f:
+        context = ET.iterparse(f, events=('start', 'end'))
+
+        # Перебор событий
+        for event, elem in context:
+            if event == 'end' and elem.tag == 'Event':  # Проверяем, если это конец элемента <Event>
+                # Ваша обработка элемента <Event> здесь
+                print(ET.tostring(elem))  # Пример вывода, замените на свою обработку
+
+                # Удаление элемента, чтобы освободить память
+                elem.clear()
+
+# Пример использования
+process_large_xml('large_file.xml')
