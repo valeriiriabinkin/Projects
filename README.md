@@ -75,3 +75,11 @@ def process_large_xml(file_path):
 
 # Пример использования
 process_large_xml('large_file.xml')
+
+
+tree = ET.parse(xml_file_path)
+    root = tree.getroot()
+    for event in root.findall('.//Event'):
+        date = event.find('Date').text
+        event_presentation = event.find('EventPresentation').text
+        user_name = event.find('UserName').text if event.find('UserName') is not None else None
