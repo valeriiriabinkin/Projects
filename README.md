@@ -83,3 +83,46 @@ tree = ET.parse(xml_file_path)
         date = event.find('Date').text
         event_presentation = event.find('EventPresentation').text
         user_name = event.find('UserName').text if event.find('UserName') is not None else None
+
+import xml.etree.ElementTree as ET
+
+def split_large_xml(input_file, events_per_file):
+    # Итеративно обрабатываем каждый элемент XML из входного файла
+    context = ET.iterparse(input_file, events=('start', 'end'))
+    event_count = 0
+    file_count = 0
+    current_events = []
+
+    for event, elem in context:
+        if event == 'end' and elem.tag.endswith('Event'):  # Проверяем, если это конец элемента <Event>
+            current_events.append(elem)
+
+            # Если набрали нужное количество событий, сохраняем в файл
+            if len(current_events) == events_per_file:
+                # Создаем новое дерево XML
+                root = ET.Element('EventLog')
+                for event_elem in current_events:
+                    root.append(event_elem)
+
+                # Создаем дерево XML и сохраняем его в файл
+                tree = ET.ElementTree(root)
+                filename = f'output_{file_count}.xml'
+                tree.write(filename, encoding='utf-8', xml_declaration=True)
+                
+                # Очищаем список текущих событий и увеличиваем счетчик файлов
+                current_events = []
+                file_count += 1
+
+    # Сохраняем оставшиеся события в последний файл
+    if current_events:
+        root = ET.Element('EventLog')
+        for event_elem in current_events:
+            root.append(event_elem)
+        tree = ET.ElementTree(root)
+        filename = f'output_{file_count}.xml'
+        tree.write(filename, encoding='utf-8', xml_declaration=True)
+
+# Пример использования
+input_file = 'large_file.xml'
+events_per_file = 1000  # Укажите желаемое количество событий в каждом файле
+split_large_xml(input_file, events_per_file)
