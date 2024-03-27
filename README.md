@@ -1,9 +1,30 @@
-select isnull(tdb.[Db],tcr.[Cr]) acct, isnull(ob_db,0) ob_db, isnull(ob_cr,0) ob_cr
-from 
-(select [Счет по дебету] [Db], SUM([Приведенная сумма]) as ob_db from [СПБ Клиринг] group by [Счет по дебету]) tdb
-full join 
-(select [Счет по кредиту] [Cr], SUM([Приведенная сумма]) as ob_cr from [СПБ Клиринг] group by [Счет по кредиту]) tcr on tdb.[Db] = tcr.[Cr]
-order by acct;
+SELECT 
+    Result.acct, 
+    Result.ob_db, 
+    Result.ob_cr, 
+    YourOtherTable.*
+FROM 
+    (
+        SELECT 
+            ISNULL(tdb.[Db], tcr.[Cr]) AS acct, 
+            ISNULL(ob_db, 0) AS ob_db, 
+            ISNULL(ob_cr, 0) AS ob_cr 
+        FROM 
+            (
+                SELECT [Счет по дебету] AS [Db], SUM([Приведенная сумма]) AS ob_db 
+                FROM [СПБ Клиринг] 
+                GROUP BY [Счет по дебету]
+            ) tdb 
+        FULL JOIN 
+            (
+                SELECT [Счет по кредиту] AS [Cr], SUM([Приведенная сумма]) AS ob_cr 
+                FROM [СПБ Клиринг] 
+                GROUP BY [Счет по кредиту]
+            ) tcr 
+        ON tdb.[Db] = tcr.[Cr]
+    ) AS Result
+JOIN YourOtherTable ON Result.acct = YourOtherTable.acct
+ORDER BY Result.acct;
 
 
 
