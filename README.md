@@ -1,10 +1,17 @@
-select isnull(tdb.[Db],tcr.[Cr]) acct, isnull(ob_db,0) ob_db, isnull(ob_cr,0) ob_cr
-from 
-(select [Счет Дт] [Db], SUM([Сумма]) as ob_db from [JE] group by [Счет Дт]) tdb
-full join 
-(select [Счет Кт] [Cr], SUM([Сумма]) as ob_cr from [JE] group by [Счет Кт]) tcr 
-on tdb.[Db] = tcr.[Cr]
-order by acct;
+SELECT FILEN,
+       ISNULL(tdb.[Db], tcr.[Cr]) AS acct,
+       ISNULL(ob_db, 0) AS ob_db,
+       ISNULL(ob_cr, 0) AS ob_cr
+FROM 
+    (SELECT FILEN, [Счет Дт] AS [Db], SUM([Сумма]) AS ob_db 
+     FROM [JE] 
+     GROUP BY FILEN, [Счет Дт]) tdb
+FULL JOIN 
+    (SELECT FILEN, [Счет Кт] AS [Cr], SUM([Сумма]) AS ob_cr 
+     FROM [JE] 
+     GROUP BY FILEN, [Счет Кт]) tcr 
+ON tdb.[Db] = tcr.[Cr] AND tdb.FILEN = tcr.FILEN
+ORDER BY FILEN, acct;
 
 
 
