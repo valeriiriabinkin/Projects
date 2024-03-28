@@ -1,30 +1,10 @@
-SELECT 
-    Result.acct, 
-    Result.ob_db, 
-    Result.ob_cr, 
-    YourOtherTable.*
-FROM 
-    (
-        SELECT 
-            ISNULL(tdb.[Db], tcr.[Cr]) AS acct, 
-            ISNULL(ob_db, 0) AS ob_db, 
-            ISNULL(ob_cr, 0) AS ob_cr 
-        FROM 
-            (
-                SELECT [Счет по дебету] AS [Db], SUM([Приведенная сумма]) AS ob_db 
-                FROM [СПБ Клиринг] 
-                GROUP BY [Счет по дебету]
-            ) tdb 
-        FULL JOIN 
-            (
-                SELECT [Счет по кредиту] AS [Cr], SUM([Приведенная сумма]) AS ob_cr 
-                FROM [СПБ Клиринг] 
-                GROUP BY [Счет по кредиту]
-            ) tcr 
-        ON tdb.[Db] = tcr.[Cr]
-    ) AS Result
-JOIN YourOtherTable ON Result.acct = YourOtherTable.acct
-ORDER BY Result.acct;
+select isnull(tdb.[Db],tcr.[Cr]) acct, isnull(ob_db,0) ob_db, isnull(ob_cr,0) ob_cr
+from 
+(select [Счет Дт] [Db], SUM([Сумма]) as ob_db from [JE] group by [Счет Дт]) tdb
+full join 
+(select [Счет Кт] [Cr], SUM([Сумма]) as ob_cr from [JE] group by [Счет Кт]) tcr 
+on tdb.[Db] = tcr.[Cr]
+order by acct;
 
 
 
